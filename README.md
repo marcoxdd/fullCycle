@@ -9,4 +9,4 @@ Url no Docker Hub:
 ### Comando para Baixar a Imagem
 
 ```sh
-docker pull marcocomarella/fullcycle:tagname
+docker pull marcocomarella/fullcycle:latest
