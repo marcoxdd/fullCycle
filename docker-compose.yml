@@ -1,0 +1,54 @@
+version: '3.8' # Updated to use condition: service_healthy
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "9880:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - node-app
+    networks:
+      - fullcycle-network
+
+  node-app:
+    container_name: node-app
+    build:
+      context: ./nodejs
+      dockerfile: Dockerfile
+    volumes:
+      - ./nodejs:/app
+    environment:
+      - MYSQL_HOST=mdb
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=nodedb
+    depends_on:
+      - mdb
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('mysql').createConnection({host: 'mdb', user: 'root', password: 'root', database: 'nodedb'}).connect(err => { if (err) process.exit(1); process.exit(0); })"]
+      interval: 10s
+      retries: 10
+      timeout: 5s
+    networks:
+      - fullcycle-network
+
+  mdb:
+    container_name: mdb
+    image: mysql:5.7
+    restart: always
+    command: --innodb-use-native-aio=0
+    tty: true
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: nodedb
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - fullcycle-network
+
+networks:
+  fullcycle-network:
+    driver: bridge
