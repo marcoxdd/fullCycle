@@ -22,6 +22,24 @@ function handleDisconnect() {
       setTimeout(handleDisconnect, 2000);
     } else {
       console.log('Connected to database successfully!');
+
+      const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS people (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255) NOT NULL
+        )
+      `;
+
+      connection.query(createTableQuery, function(err, result) {
+        if (err) throw err;
+        console.log('Table created or already exists');
+
+        const insertQuery = "INSERT INTO people (name) VALUES ('Marco Comarella')";
+        connection.query(insertQuery, function(err, result) {
+          if (err) throw err;
+          console.log('Record inserted');
+        });
+      });
     }
   });
 
@@ -36,9 +54,6 @@ function handleDisconnect() {
 }
 
 handleDisconnect();
-
-const insertQuery = "INSERT INTO people (name) VALUES ('Marco Comarella')";
-connection.query(insertQuery)
 
 app.get('/', (req, res) => {
   const selectQuery = 'SELECT name FROM people';
